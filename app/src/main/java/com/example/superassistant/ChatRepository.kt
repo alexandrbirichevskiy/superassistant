@@ -11,7 +11,11 @@ internal class ChatRepository(private val retrofit: SuperAssistantRetrofit) {
 
         val prompt = Prompt(
             modelUri = modelUri,
-            completionOptions = CompletionOptions(stream = false, temperature = 0.6, maxTokens = "2000"),
+            completionOptions = CompletionOptions(
+                stream = false,
+                temperature = 0.2,
+                maxTokens = "2000",
+                responseFormat = Type("json")),
             messages = messages
         )
 

@@ -11,7 +11,12 @@ data class Prompt(
 data class CompletionOptions(
     @SerializedName("stream") val stream: Boolean,
     @SerializedName("temperature") val temperature: Double,
-    @SerializedName("maxTokens") val maxTokens: String
+    @SerializedName("maxTokens") val maxTokens: String,
+    @SerializedName("response_format") val responseFormat: Type,
+)
+
+data class Type(
+    @SerializedName("type") val type: String
 )
 
 data class Message(

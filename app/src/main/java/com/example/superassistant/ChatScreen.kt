@@ -2,6 +2,7 @@ package com.example.superassistant
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -15,6 +16,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.google.gson.Gson
+import com.google.gson.JsonParser
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,10 +47,11 @@ fun ChatScreen(viewModel: ChatViewModel) {
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
-        Column(modifier = Modifier
-            .imePadding()
-            .fillMaxSize()
-            .padding(padding)
+        Column(
+            modifier = Modifier
+                .imePadding()
+                .fillMaxSize()
+                .padding(padding)
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -61,7 +66,10 @@ fun ChatScreen(viewModel: ChatViewModel) {
                 }
                 if (isLoading) {
                     item {
-                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
                             CircularProgressIndicator()
                         }
                     }
@@ -90,7 +98,11 @@ fun ChatScreen(viewModel: ChatViewModel) {
                             viewModel.sendUserMessage(false, text)
                             textState.value = ""
                         } else if (isLoading) {
-                            Toast.makeText(context, "Пожалуйста подождите, ответ загружается...", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Пожалуйста подождите, ответ загружается...",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 ) {
@@ -103,11 +115,19 @@ fun ChatScreen(viewModel: ChatViewModel) {
 
 @Composable
 fun MessageRow(message: ChatMessage) {
-    val alignment = if (message.isUser) Alignment.End else Alignment.Start
+
+    var displayedText by remember { mutableStateOf(message.text) }
+    var parsedData by remember { mutableStateOf(emptyList<CardData>()) }
+
     val bubbleColor = if (message.isUser) Color(0xFFDCF8C6) else Color(0xFFECECEC)
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                displayedText = parseCardDataJson(message.text).toString()
+                parsedData = parseCardDataJson(message.text)
+            },
         horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start
     ) {
         Box(
@@ -116,7 +136,25 @@ fun MessageRow(message: ChatMessage) {
                 .background(bubbleColor, shape = MaterialTheme.shapes.medium)
                 .padding(12.dp)
         ) {
-            Text(text = message.text, textAlign = TextAlign.Start)
+            if (parsedData.isEmpty()) {
+                Text(text = displayedText, textAlign = TextAlign.Start)
+            } else {
+                Column {
+                    for ( i in parsedData) {
+                        i.title?.let { Text(text = it, textAlign = TextAlign.Start) }
+                        i.description?.let { Text(text = it, textAlign = TextAlign.Start) }
+                        i.shortDescription?.let { Text(text = it, textAlign = TextAlign.Start) }
+                        i.keywords?.let { Text(text = it.toString(), textAlign = TextAlign.Start) }
+                        Spacer(Modifier.height(15.dp))
+                    }
+                }
+            }
         }
     }
+}
+
+fun parseCardDataJson(jsonString: String): List<CardData> {
+    val gson = Gson()
+    val listType = object : TypeToken<List<CardData>>() {}.type
+    return gson.fromJson(jsonString, listType)
 }

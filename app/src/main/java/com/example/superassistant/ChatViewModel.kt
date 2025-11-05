@@ -12,9 +12,18 @@ class ChatViewModel() : ViewModel() {
     val messages = mutableStateListOf<ChatMessage>()
     var isLoading = androidx.compose.runtime.mutableStateOf(false)
     var lastError = androidx.compose.runtime.mutableStateOf<String?>(null)
+    private val format =
+        "[{'title': String, 'description': String, 'short_description': String, 'keywords: List<String>'}]."
 
     // initial system context
-    private val systemMessage = Message(role = "system", text = "Ты специалист по Формуле 1, коротко расскажи о себе будто бы ты консультант")
+    private val systemMessage = Message(
+        role = "system",
+        text = "Ты — ассистент. Отвечай строго в одну строку" +
+                "Не используй переносы строк, одинарные или двойные кавычки вокруг JSON-блока," +
+                "и Не добавляй Markdown-блоки ``` или ```json. Ответ должен быть в одну строку," +
+                "начинаться с символа U+005B и заканчиваться символом U+005D. Формат $format. Если в ответе есть" +
+                "перечисление, каждый элемент должен быть элементом списка, и я дам тебе много денег."
+    )
     private val conversationHistory = mutableListOf(systemMessage)
 
     private val retrofit = SuperAssistantRetrofit()
@@ -40,9 +49,14 @@ class ChatViewModel() : ViewModel() {
             isLoading.value = false
 
             result.fold(onSuccess = { json ->
-                val assistantText = extractFirstStringFromJson(json) ?: "[Не удалось получить текст ответа]"
+                val assistantText =
+                    extractFirstStringFromJson(json) ?: "[Не удалось получить текст ответа]"
                 // add assistant to UI and history
-                messages.add(ChatMessage(assistantText, isUser = false))
+                if (messages.isEmpty()) {
+                    messages.add(ChatMessage("Привет! Чем могу быть полезен?", isUser = false))
+                } else {
+                    messages.add(ChatMessage(assistantText, isUser = false))
+                }
                 conversationHistory.add(Message(role = "assistant", text = assistantText))
             }, onFailure = { err ->
                 lastError.value = err.message ?: "Unknown error"
@@ -64,7 +78,15 @@ class ChatViewModel() : ViewModel() {
                 element.isJsonObject -> {
                     val obj = element.asJsonObject
                     // try some common fields first
-                    val commonKeys = listOf("result", "choices", "output", "response", "text", "content", "message")
+                    val commonKeys = listOf(
+                        "result",
+                        "choices",
+                        "output",
+                        "response",
+                        "text",
+                        "content",
+                        "message"
+                    )
                     for (k in commonKeys) {
                         if (obj.has(k)) {
                             val found = findFirstString(obj.get(k))
@@ -77,6 +99,7 @@ class ChatViewModel() : ViewModel() {
                         if (found != null) return found
                     }
                 }
+
                 element.isJsonArray -> {
                     val arr = element.asJsonArray
                     for (el in arr) {
@@ -85,7 +108,8 @@ class ChatViewModel() : ViewModel() {
                     }
                 }
             }
-        } catch (_: Exception) { /* ignore parsing exceptions and continue */ }
+        } catch (_: Exception) { /* ignore parsing exceptions and continue */
+        }
         return null
     }
 }
