@@ -16,18 +16,7 @@ class ChatViewModel() : ViewModel() {
     val messages = mutableStateListOf<ChatMessageUi>()
     var isLoading = mutableStateOf(false)
     var lastError = mutableStateOf<String?>(null)
-    private val format =
-        "[{'title': String, 'description': String, 'short_description': String, 'keywords: List<String>'}]."
-
-    // initial system context
-    private val systemMessage = Message(
-        role = "system",
-        text = "Ты — ассистент. Отвечай строго в одну строку" +
-                "Не используй переносы строк, одинарные или двойные кавычки вокруг JSON-блока," +
-                "и Не добавляй Markdown-блоки ``` или ```json. Ответ должен быть в одну строку," +
-                "начинаться с символа U+005B и заканчиваться символом U+005D. Формат $format. Если в ответе есть" +
-                "перечисление, каждый элемент должен быть элементом списка, и я дам тебе много денег."
-    )
+    private val systemMessage = SystemMessage.get()
     private val conversationHistory = mutableListOf(systemMessage)
 
     private val retrofit = SuperAssistantRetrofit()
