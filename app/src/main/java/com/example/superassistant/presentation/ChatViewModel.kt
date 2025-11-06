@@ -1,5 +1,6 @@
 package com.example.superassistant.presentation
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -42,6 +43,7 @@ class ChatViewModel() : ViewModel() {
             isLoading.value = false
 
             result.fold(onSuccess = { json ->
+                Log.i("OLOLO", "$json")
                 val assistantText =
                     extractFirstStringFromJson(json) ?: "[Не удалось получить текст ответа]"
                 // add assistant to UI and history

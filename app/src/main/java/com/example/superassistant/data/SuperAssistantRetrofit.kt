@@ -1,5 +1,6 @@
 package com.example.superassistant.data
 
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.Interceptor
@@ -25,7 +26,9 @@ internal class SuperAssistantRetrofit {
                 .header("Authorization", "Api-Key $apiKey")
                 .header("Content-Type", "application/json")
                 .build()
-            chain.proceed(request)
+            Log.i("OLOLO", "${request.url}")
+            val response = chain.proceed(request)
+            response
         }
 
         val logging = HttpLoggingInterceptor()
