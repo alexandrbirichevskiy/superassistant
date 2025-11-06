@@ -1,5 +1,6 @@
-package com.example.superassistant
+package com.example.superassistant.data
 
+import com.example.superassistant.Keys
 import com.google.gson.JsonObject
 
 internal class ChatRepository(private val retrofit: SuperAssistantRetrofit) {
@@ -15,7 +16,8 @@ internal class ChatRepository(private val retrofit: SuperAssistantRetrofit) {
                 stream = false,
                 temperature = 0.2,
                 maxTokens = "2000",
-                responseFormat = Type("json")),
+                responseFormat = Type("json")
+            ),
             messages = messages
         )
 

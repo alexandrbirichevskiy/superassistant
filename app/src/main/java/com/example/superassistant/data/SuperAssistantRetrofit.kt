@@ -1,12 +1,12 @@
-package com.example.superassistant
+package com.example.superassistant.data
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import retrofit2.Retrofit
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
@@ -47,4 +47,3 @@ internal class SuperAssistantRetrofit {
         return retrofit.create(LlmApi::class.java)
     }
 }
-

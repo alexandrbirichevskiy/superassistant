@@ -1,6 +1,6 @@
-package com.example.superassistant
+package com.example.superassistant.presentation
 
-data class CardData(
+data class CardDataUi(
     val title: String?,
     val description: String?,
     val shortDescription: String?,

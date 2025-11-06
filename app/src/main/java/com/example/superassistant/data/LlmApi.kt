@@ -1,4 +1,4 @@
-package com.example.superassistant
+package com.example.superassistant.data
 
 import com.google.gson.JsonObject
 import retrofit2.Response

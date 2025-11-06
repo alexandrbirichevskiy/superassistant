@@ -1,17 +1,21 @@
-package com.example.superassistant
+package com.example.superassistant.presentation
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.superassistant.data.ChatRepository
+import com.example.superassistant.data.Message
+import com.example.superassistant.data.SuperAssistantRetrofit
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import kotlinx.coroutines.launch
 
 class ChatViewModel() : ViewModel() {
 
-    val messages = mutableStateListOf<ChatMessage>()
-    var isLoading = androidx.compose.runtime.mutableStateOf(false)
-    var lastError = androidx.compose.runtime.mutableStateOf<String?>(null)
+    val messages = mutableStateListOf<ChatMessageUi>()
+    var isLoading = mutableStateOf(false)
+    var lastError = mutableStateOf<String?>(null)
     private val format =
         "[{'title': String, 'description': String, 'short_description': String, 'keywords: List<String>'}]."
 
@@ -34,7 +38,7 @@ class ChatViewModel() : ViewModel() {
         if (isSystem) {
             send()
         } else {
-            messages.add(ChatMessage(userText.trim(), isUser = true))
+            messages.add(ChatMessageUi(userText.trim(), isUser = true))
             conversationHistory.add(Message(role = "user", text = userText.trim()))
             send()
         }
@@ -53,14 +57,14 @@ class ChatViewModel() : ViewModel() {
                     extractFirstStringFromJson(json) ?: "[Не удалось получить текст ответа]"
                 // add assistant to UI and history
                 if (messages.isEmpty()) {
-                    messages.add(ChatMessage("Привет! Чем могу быть полезен?", isUser = false))
+                    messages.add(ChatMessageUi("Привет! Чем могу быть полезен?", isUser = false))
                 } else {
-                    messages.add(ChatMessage(assistantText, isUser = false))
+                    messages.add(ChatMessageUi(assistantText, isUser = false))
                 }
                 conversationHistory.add(Message(role = "assistant", text = assistantText))
             }, onFailure = { err ->
                 lastError.value = err.message ?: "Unknown error"
-                messages.add(ChatMessage("Ошибка: ${err.message}", isUser = false))
+                messages.add(ChatMessageUi("Ошибка: ${err.message}", isUser = false))
             })
         }
     }
