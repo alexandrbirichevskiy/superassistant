@@ -1,7 +1,7 @@
 *.iml
 .gradle
 /local.properties
-/.idea
+.idea
 /app/src/main/java/com/example/superassistant/Keys.kt
 .DS_Store
 /build
