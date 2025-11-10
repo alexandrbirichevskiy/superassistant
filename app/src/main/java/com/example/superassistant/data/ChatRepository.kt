@@ -1,28 +1,35 @@
 package com.example.superassistant.data
 
+import android.util.Log
 import com.example.superassistant.Keys
+import com.example.superassistant.presentation.Agent
 import com.google.gson.JsonObject
 
 internal class ChatRepository(private val retrofit: SuperAssistantRetrofit) {
 
-    suspend fun sendRequest(messages: List<Message>) : Result<JsonObject> {
-        val modelUri = "gpt://${Keys.ID}/yandexgpt-lite"
+    suspend fun sendRequest(
+        useProModel: Boolean,
+        agent: Agent
+    ) : Result<JsonObject> {
+
+        val model = if (useProModel) "yandexgpt/latest" else "yandexgpt-lite"
 
         val api = retrofit.createApi(Keys.SECURE_KEY)
 
         val prompt = Prompt(
-            modelUri = modelUri,
+            modelUri = "gpt://${Keys.ID}/$model",
             completionOptions = CompletionOptions(
                 stream = false,
-                temperature = 0.2,
+                temperature = agent.temperature,
                 maxTokens = "2000",
                 responseFormat = Type("json")
             ),
-            messages = messages
+            messages = agent.history
         )
 
         return try {
             val response = api.get(prompt)
+            Log.i("OLOLO", model)
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body != null) {

@@ -1,3 +1,7 @@
 package com.example.superassistant.presentation
 
-data class ChatMessageUi(val text: String, val isUser: Boolean)
+data class ChatMessageUi(
+    val text: String,
+    val isUser: Boolean,
+    val model: String
+)

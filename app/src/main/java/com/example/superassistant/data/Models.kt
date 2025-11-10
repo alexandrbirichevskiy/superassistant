@@ -21,5 +21,5 @@ data class Type(
 
 data class Message(
     @SerializedName("role") val role: String,
-    @SerializedName("text") val text: String
+    @SerializedName("text") val text: String,
 )

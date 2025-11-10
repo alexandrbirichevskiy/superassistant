@@ -1,6 +1,5 @@
 package com.example.superassistant.presentation
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,18 +27,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,7 +51,9 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(viewModel: ChatViewModel) {
+fun ChatScreen(
+    viewModel: ChatViewModel,
+) {
     val messages = viewModel.messages
     val isLoading by viewModel.isLoading
     val lastError by remember { viewModel.lastError }
@@ -63,6 +63,7 @@ fun ChatScreen(viewModel: ChatViewModel) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val lazyListState = rememberLazyListState()
+    val usingProModel = viewModel.usingProModel.collectAsState()
 
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) lazyListState.animateScrollToItem(messages.lastIndex)
@@ -88,6 +89,18 @@ fun ChatScreen(viewModel: ChatViewModel) {
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(text = "YandexGpt-lite")
+                Switch(
+                    checked = usingProModel.value,
+                    onCheckedChange = { viewModel.updateModel() })
+                Text(text = "YandexGpt-pro")
+            }
+
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
@@ -153,8 +166,6 @@ fun ChatScreen(viewModel: ChatViewModel) {
 fun MessageRow(message: ChatMessageUi) {
 
     var displayedText by remember { mutableStateOf(message.text) }
-    var parsedData by remember { mutableStateOf(emptyList<CardDataUi>()) }
-
     val bubbleColor = if (message.isUser) Color(0xFFDCF8C6) else Color(0xFFECECEC)
 
     Row(
@@ -162,29 +173,18 @@ fun MessageRow(message: ChatMessageUi) {
             .fillMaxWidth()
             .clickable {
                 displayedText = parseCardDataJson(message.text).toString()
-                parsedData = parseCardDataJson(message.text)
             },
         horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .widthIn(max = 300.dp)
                 .background(bubbleColor, shape = MaterialTheme.shapes.medium)
                 .padding(12.dp)
         ) {
-            if (parsedData.isEmpty()) {
-                Text(text = displayedText, textAlign = TextAlign.Start)
-            } else {
-                Column {
-                    for ( i in parsedData) {
-                        i.title?.let { Text(text = it, textAlign = TextAlign.Start) }
-                        i.description?.let { Text(text = it, textAlign = TextAlign.Start) }
-                        i.shortDescription?.let { Text(text = it, textAlign = TextAlign.Start) }
-                        i.keywords?.let { Text(text = it.toString(), textAlign = TextAlign.Start) }
-                        Spacer(Modifier.height(15.dp))
-                    }
-                }
-            }
+            if (!message.isUser) Text(text = message.model, color = Color.Red.copy(0.7f))
+            Spacer(Modifier.height(8.dp))
+            Text(text = displayedText, textAlign = TextAlign.Start)
         }
     }
 }
