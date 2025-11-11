@@ -1,4 +1,4 @@
-package com.example.superassistant.presentation
+package com.example.superassistant.yandexgpt.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

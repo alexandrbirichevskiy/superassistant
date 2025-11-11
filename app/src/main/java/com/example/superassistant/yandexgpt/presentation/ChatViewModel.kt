@@ -1,13 +1,14 @@
-package com.example.superassistant.presentation
+package com.example.superassistant.yandexgpt.presentation
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.superassistant.data.ChatRepository
-import com.example.superassistant.data.Message
-import com.example.superassistant.data.SuperAssistantRetrofit
+import com.example.superassistant.yandexgpt.data.ChatRepository
+import com.example.superassistant.yandexgpt.data.Message
+import com.example.superassistant.SuperAssistantRetrofit
+import com.example.superassistant.huggingface.HuggingFaceRepository
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import kotlinx.coroutines.delay
@@ -22,21 +23,21 @@ class ChatViewModel() : ViewModel() {
     var lastError = mutableStateOf<String?>(null)
 
     val agentMath = Agent(
-        system = "Ты консультант, коротко рассказывающий 3 факта о животном, введенном пользователем",
-        name = "Консультант с температурой 0.0",
+        system = "You're a fish expert. Answer in 20 characters or less.",
+        name = "HuggingFaceTB/SmolLM3-3B",
         temperature = 0.0
     )
 
     val agentPhil = Agent(
-        system = "Ты консультант, коротко рассказывающий 3 факта о животном, введенном пользователем",
-        name = "Консультант с температурой 0.5",
-        temperature = 0.5
+        system = "You're a fish expert. Answer in 20 characters or less.",
+        name = "katanemo/Arch-Router-1.5B",
+        temperature = 0.0
     )
 
     val agentMusic = Agent(
-        system = "Ты консультант, коротко рассказывающий 3 факта о животном, введенном пользователем",
-        name = "Консультант с температурой 1.0",
-        temperature = 1.0
+        system = "You're a fish expert. Answer in 20 characters or less.",
+        name = "openai/gpt-oss-120b",
+        temperature = 0.0
     )
 
     val expertAgent = Agent(
@@ -45,11 +46,11 @@ class ChatViewModel() : ViewModel() {
         temperature = 0.5
     )
 
-    val agentList = listOf<Agent>(agentMusic, agentPhil, agentMath)
+    val agentList = listOf(agentPhil, agentMath, agentMusic)
     val agentProList = listOf(expertAgent)
     val usingProModel = MutableStateFlow(false)
     private val retrofit = SuperAssistantRetrofit()
-    private val repository = ChatRepository(retrofit)
+    private val repository = HuggingFaceRepository(retrofit)
 
     fun sendUserMessage(isSystem: Boolean = false, userText: String) {
         if (userText.isBlank() && !isSystem) return
@@ -60,7 +61,9 @@ class ChatViewModel() : ViewModel() {
                 ChatMessageUi(
                     userText.trim(),
                     isUser = true,
-                    model = usingProModel.value.getModelName()
+                    model = usingProModel.value.getModelName(),
+                    "",
+                    ""
                 )
             )
             getConversationHistory().forEach {
@@ -91,7 +94,6 @@ class ChatViewModel() : ViewModel() {
                 isLoading.value = false
 
                 result.fold(onSuccess = { json ->
-                    Log.i("OLOLO", "$json")
                     val assistantText =
                         extractFirstStringFromJson(json) ?: "[Не удалось получить текст ответа]"
                     // add assistant to UI and history
@@ -99,7 +101,9 @@ class ChatViewModel() : ViewModel() {
                         ChatMessageUi(
                             assistantText,
                             isUser = false,
-                            model = it.name
+                            model = it.name,
+                            json.get("time").toString(),
+                            json.get("usage").asJsonObject.get("total_tokens").toString()
                         )
                     )
 
@@ -115,7 +119,9 @@ class ChatViewModel() : ViewModel() {
                         ChatMessageUi(
                             "Ошибка: ${err.message}",
                             isUser = false,
-                            model = it.name
+                            model = it.name,
+                            "error",
+                            ""
                         )
                     )
                 })

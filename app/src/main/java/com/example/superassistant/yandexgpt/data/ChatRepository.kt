@@ -1,20 +1,29 @@
-package com.example.superassistant.data
+package com.example.superassistant.yandexgpt.data
 
 import android.util.Log
 import com.example.superassistant.Keys
-import com.example.superassistant.presentation.Agent
+import com.example.superassistant.SuperAssistantRetrofit
+import com.example.superassistant.yandexgpt.presentation.Agent
 import com.google.gson.JsonObject
+import kotlin.getValue
 
 internal class ChatRepository(private val retrofit: SuperAssistantRetrofit) {
+
+    val api by lazy {
+        retrofit.createApi(
+            "Api-Key ${Keys.SECURE_KEY}",
+            BASE_URL,
+            LlmApi::class.java
+        )
+    }
 
     suspend fun sendRequest(
         useProModel: Boolean,
         agent: Agent
     ) : Result<JsonObject> {
 
-        val model = if (useProModel) "yandexgpt/latest" else "yandexgpt-lite"
 
-        val api = retrofit.createApi(Keys.SECURE_KEY)
+        val model = if (useProModel) "yandexgpt/latest" else "yandexgpt-lite"
 
         val prompt = Prompt(
             modelUri = "gpt://${Keys.ID}/$model",
@@ -44,5 +53,9 @@ internal class ChatRepository(private val retrofit: SuperAssistantRetrofit) {
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    private companion object {
+        const val BASE_URL = "https://llm.api.cloud.yandex.net/"
     }
 }

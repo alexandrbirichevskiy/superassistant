@@ -1,6 +1,7 @@
-package com.example.superassistant.data
+package com.example.superassistant
 
 import android.util.Log
+import com.example.superassistant.yandexgpt.data.LlmApi
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.Interceptor
@@ -13,22 +14,29 @@ import java.util.concurrent.TimeUnit
 
 internal class SuperAssistantRetrofit {
 
-    private val BASE_URL = "https://llm.api.cloud.yandex.net/"
     val gson: Gson = GsonBuilder()
         .serializeNulls()
         .create()
 
-    fun createApi(apiKey: String): LlmApi {
+    fun <T> createApi(
+        apiKey: String,
+        baseUrl: String,
+        service: Class<T>,
+    ): T {
 
         val authInterceptor = Interceptor { chain ->
             val original: Request = chain.request()
             val request = original.newBuilder()
-                .header("Authorization", "Api-Key $apiKey")
+                .header("Authorization", apiKey)
                 .header("Content-Type", "application/json")
                 .build()
-            Log.i("OLOLO", "${request.url}")
+            Log.e("OLOLO", "${request.url}")
+            val startNs = System.nanoTime()
             val response = chain.proceed(request)
-            response
+            val endNs = System.nanoTime()
+            val tookMs = (endNs - startNs) / 1e6
+            val a = response.newBuilder().header("Time", tookMs.toString()).build()
+            a
         }
 
         val logging = HttpLoggingInterceptor()
@@ -42,11 +50,11 @@ internal class SuperAssistantRetrofit {
             .build()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
 
-        return retrofit.create(LlmApi::class.java)
+        return retrofit.create(service)
     }
 }

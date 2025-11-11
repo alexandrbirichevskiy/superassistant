@@ -1,6 +1,6 @@
-package com.example.superassistant.presentation
+package com.example.superassistant.yandexgpt.presentation
 
-import com.example.superassistant.data.Message
+import com.example.superassistant.yandexgpt.data.Message
 
 class SystemMessage(private val request: String) {
 

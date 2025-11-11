@@ -1,4 +1,4 @@
-package com.example.superassistant.presentation
+package com.example.superassistant.yandexgpt.presentation
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -89,17 +89,19 @@ fun ChatScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(text = "YandexGpt-lite")
-                Switch(
-                    checked = usingProModel.value,
-                    onCheckedChange = { viewModel.updateModel() })
-                Text(text = "YandexGpt-pro")
-            }
+//            Row(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(vertical = 8.dp, horizontal = 16.dp),
+//                verticalAlignment = Alignment.CenterVertically,
+//                horizontalArrangement = Arrangement.SpaceBetween,
+//            ) {
+//                Text(text = "YandexGpt-lite")
+//                Switch(
+//                    checked = usingProModel.value,
+//                    onCheckedChange = { viewModel.updateModel() })
+//                Text(text = "YandexGpt-pro")
+//            }
 
             LazyColumn(
                 modifier = Modifier
@@ -183,6 +185,14 @@ fun MessageRow(message: ChatMessageUi) {
                 .padding(12.dp)
         ) {
             if (!message.isUser) Text(text = message.model, color = Color.Red.copy(0.7f))
+            if (message.time.isNotEmpty()) Text(
+                text = "Время запроса: ${message.time} ms",
+                color = Color.Blue.copy(0.7f)
+            )
+            if (!message.tokens.isNullOrEmpty()) Text(
+                text = "Токены: ${message.tokens}",
+                color = Color.DarkGray.copy(0.7f)
+            )
             Spacer(Modifier.height(8.dp))
             Text(text = displayedText, textAlign = TextAlign.Start)
         }
@@ -191,6 +201,6 @@ fun MessageRow(message: ChatMessageUi) {
 
 fun parseCardDataJson(jsonString: String): List<CardDataUi> {
     val gson = Gson()
-    val listType = object : TypeToken<List<CardDataUi>>() {}.type
+    val listType = object : com.google.gson.reflect.TypeToken<List<CardDataUi>>() {}.type
     return gson.fromJson(jsonString, listType)
 }

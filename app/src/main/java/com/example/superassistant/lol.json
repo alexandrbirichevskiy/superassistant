@@ -1,0 +1,37 @@
+{
+  "id": "chatcmpl-Root=1-6913a8fa-1aafc4767fd9fa4f6da9c64c",
+  "object": "chat.completion",
+  "created": 1762896122,
+  "model": "HuggingFaceTB/SmolLM3-3B",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "<think>\n\n</think>\nПривет! Если у тебя возникли вопросы о питании, здоровье или образе жизни, я готов помочь. Дай мне знать, в чем ты нуждаешься. Я помогу найти полезную информацию или подскажу интересные советы. Задай свой вопрос!",
+        "refusal": null,
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": [],
+        "reasoning_content": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop",
+      "stop_reason": null,
+      "token_ids": null
+    }
+  ],
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+    "prompt_tokens": 57,
+    "total_tokens": 127,
+    "completion_tokens": 70,
+    "prompt_tokens_details": null
+  },
+  "prompt_logprobs": null,
+  "prompt_token_ids": null,
+  "kv_transfer_params": null,
+  "time": "1298.167126"
+}

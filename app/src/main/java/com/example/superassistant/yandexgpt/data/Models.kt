@@ -1,4 +1,4 @@
-package com.example.superassistant.data
+package com.example.superassistant.yandexgpt.data
 
 import com.google.gson.annotations.SerializedName
 
