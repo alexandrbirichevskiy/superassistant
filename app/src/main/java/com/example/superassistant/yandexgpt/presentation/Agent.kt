@@ -7,5 +7,6 @@ data class Agent(
     val system: String,
     val history: MutableList<Message> = mutableListOf(SystemMessage(system).get()),
     val name: String,
-    val temperature: Double
+    val temperature: Double,
+    val maxTokens: String,
 )

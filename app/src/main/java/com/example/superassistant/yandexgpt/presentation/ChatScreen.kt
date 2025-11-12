@@ -185,8 +185,8 @@ fun MessageRow(message: ChatMessageUi) {
                 .padding(12.dp)
         ) {
             if (!message.isUser) Text(text = message.model, color = Color.Red.copy(0.7f))
-            if (message.time.isNotEmpty()) Text(
-                text = "Время запроса: ${message.time} ms",
+            if (message.maxTokens.isNotEmpty()) Text(
+                text = "maxTokens: ${message.maxTokens}",
                 color = Color.Blue.copy(0.7f)
             )
             if (!message.tokens.isNullOrEmpty()) Text(

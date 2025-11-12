@@ -4,6 +4,6 @@ data class ChatMessageUi(
     val text: String,
     val isUser: Boolean,
     val model: String,
-    val time: String,
-    val tokens: String?
+    val tokens: String?,
+    val maxTokens: String,
 )

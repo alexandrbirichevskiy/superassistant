@@ -23,34 +23,37 @@ class ChatViewModel() : ViewModel() {
     var lastError = mutableStateOf<String?>(null)
 
     val agentMath = Agent(
-        system = "You're a fish expert. Answer in 20 characters or less.",
-        name = "HuggingFaceTB/SmolLM3-3B",
-        temperature = 0.0
+        system = "Ты - рыба Немо из мультика в поисках Немо",
+        name = "Немо",
+        temperature = 0.5,
+        maxTokens = "500"
     )
 
     val agentPhil = Agent(
         system = "You're a fish expert. Answer in 20 characters or less.",
         name = "katanemo/Arch-Router-1.5B",
-        temperature = 0.0
+        temperature = 0.5,
+        maxTokens = "500"
     )
 
     val agentMusic = Agent(
-        system = "You're a fish expert. Answer in 20 characters or less.",
-        name = "openai/gpt-oss-120b",
-        temperature = 0.0
+        system = "Ты - рыба Дори из мультика в поисках Немо",
+        name = "Дори",
+        temperature = 0.5,
+        maxTokens = "10"
     )
 
-    val expertAgent = Agent(
-        system = "Под какие задачи подходят агенты с температурой 1; 0.5; 0",
-        name = "Эксперт",
-        temperature = 0.5
-    )
+//    val expertAgent = Agent(
+//        system = "Под какие задачи подходят агенты с температурой 1; 0.5; 0",
+//        name = "Эксперт",
+//        temperature = 0.5
+//    )
 
-    val agentList = listOf(agentPhil, agentMath, agentMusic)
-    val agentProList = listOf(expertAgent)
+    val agentList = listOf(agentMath, agentMusic )
+    val agentProList = emptyList<Agent>()
     val usingProModel = MutableStateFlow(false)
     private val retrofit = SuperAssistantRetrofit()
-    private val repository = HuggingFaceRepository(retrofit)
+    private val repository = ChatRepository(retrofit)
 
     fun sendUserMessage(isSystem: Boolean = false, userText: String) {
         if (userText.isBlank() && !isSystem) return
@@ -62,8 +65,9 @@ class ChatViewModel() : ViewModel() {
                     userText.trim(),
                     isUser = true,
                     model = usingProModel.value.getModelName(),
-                    "",
-                    ""
+                    tokens = "",
+                    maxTokens = ""
+
                 )
             )
             getConversationHistory().forEach {
@@ -97,13 +101,15 @@ class ChatViewModel() : ViewModel() {
                     val assistantText =
                         extractFirstStringFromJson(json) ?: "[Не удалось получить текст ответа]"
                     // add assistant to UI and history
+
                     messages.add(
                         ChatMessageUi(
                             assistantText,
                             isUser = false,
                             model = it.name,
-                            json.get("time").toString(),
-                            json.get("usage").asJsonObject.get("total_tokens").toString()
+                            tokens = json.get("result").asJsonObject.get("usage").asJsonObject.get("totalTokens")
+                                .toString(),
+                            maxTokens = it.maxTokens
                         )
                     )
 
@@ -120,8 +126,8 @@ class ChatViewModel() : ViewModel() {
                             "Ошибка: ${err.message}",
                             isUser = false,
                             model = it.name,
-                            "error",
-                            ""
+                            tokens = "",
+                            maxTokens = it.maxTokens
                         )
                     )
                 })

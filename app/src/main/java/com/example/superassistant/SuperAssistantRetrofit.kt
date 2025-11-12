@@ -31,12 +31,8 @@ internal class SuperAssistantRetrofit {
                 .header("Content-Type", "application/json")
                 .build()
             Log.e("OLOLO", "${request.url}")
-            val startNs = System.nanoTime()
             val response = chain.proceed(request)
-            val endNs = System.nanoTime()
-            val tookMs = (endNs - startNs) / 1e6
-            val a = response.newBuilder().header("Time", tookMs.toString()).build()
-            a
+            response
         }
 
         val logging = HttpLoggingInterceptor()

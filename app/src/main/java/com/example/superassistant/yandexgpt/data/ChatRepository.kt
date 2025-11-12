@@ -30,7 +30,7 @@ internal class ChatRepository(private val retrofit: SuperAssistantRetrofit) {
             completionOptions = CompletionOptions(
                 stream = false,
                 temperature = agent.temperature,
-                maxTokens = "2000",
+                maxTokens = agent.maxTokens,
                 responseFormat = Type("json")
             ),
             messages = agent.history
@@ -38,7 +38,7 @@ internal class ChatRepository(private val retrofit: SuperAssistantRetrofit) {
 
         return try {
             val response = api.get(prompt)
-            Log.i("OLOLO", model)
+//            Log.i("OLOLO", "$model "agent.maxTokens)
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body != null) {
