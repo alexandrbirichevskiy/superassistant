@@ -26,7 +26,7 @@ class ChatViewModel() : ViewModel() {
         system = "Ты - рыба Немо из мультика в поисках Немо",
         name = "Немо",
         temperature = 0.5,
-        maxTokens = "500"
+        maxTokens = "1000"
     )
 
     val agentPhil = Agent(
@@ -40,7 +40,7 @@ class ChatViewModel() : ViewModel() {
         system = "Ты - рыба Дори из мультика в поисках Немо",
         name = "Дори",
         temperature = 0.5,
-        maxTokens = "10"
+        maxTokens = "1000"
     )
 
 //    val expertAgent = Agent(
@@ -49,7 +49,7 @@ class ChatViewModel() : ViewModel() {
 //        temperature = 0.5
 //    )
 
-    val agentList = listOf(agentMath, agentMusic )
+    val agentList = mutableListOf(agentMusic)
     val agentProList = emptyList<Agent>()
     val usingProModel = MutableStateFlow(false)
     private val retrofit = SuperAssistantRetrofit()
@@ -80,6 +80,12 @@ class ChatViewModel() : ViewModel() {
             }
             send()
         }
+    }
+
+    fun addAgent() {
+        agentList.clear()
+        agentList.add(agentMath)
+        send()
     }
 
     fun updateModel() {
