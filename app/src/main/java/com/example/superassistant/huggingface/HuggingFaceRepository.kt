@@ -3,12 +3,8 @@ package com.example.superassistant.huggingface
 import android.util.Log
 import com.example.superassistant.Keys
 import com.example.superassistant.SuperAssistantRetrofit
-import com.example.superassistant.yandexgpt.data.CompletionOptions
-import com.example.superassistant.yandexgpt.data.Message
-import com.example.superassistant.yandexgpt.data.Prompt
-import com.example.superassistant.yandexgpt.data.Type
-import com.example.superassistant.yandexgpt.presentation.Agent
-import com.google.gson.JsonElement
+import com.example.superassistant.yandexgpt.data.network.dto.MessageRequestDTO
+import com.example.superassistant.yandexgpt.presentation.models.Agent
 import com.google.gson.JsonObject
 
 internal class HuggingFaceRepository(private val retrofit: SuperAssistantRetrofit) {
@@ -52,7 +48,7 @@ internal class HuggingFaceRepository(private val retrofit: SuperAssistantRetrofi
         }
     }
 
-    private fun Message.toMessageDTO() = MessageDTO(
+    private fun MessageRequestDTO.toMessageDTO() = MessageDTO(
         role = role,
         content = text
     )

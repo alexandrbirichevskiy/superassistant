@@ -1,4 +1,4 @@
-package com.example.superassistant.yandexgpt.presentation
+package com.example.superassistant.yandexgpt.presentation.models
 
 data class CardDataUi(
     val title: String?,

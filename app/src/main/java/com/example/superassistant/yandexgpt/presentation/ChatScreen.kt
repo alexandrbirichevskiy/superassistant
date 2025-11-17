@@ -1,6 +1,6 @@
 package com.example.superassistant.yandexgpt.presentation
 
-import android.widget.Button
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -29,13 +28,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,14 +48,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.superassistant.yandexgpt.presentation.models.CardDataUi
+import com.example.superassistant.yandexgpt.presentation.models.ChatMessageUi
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
-    viewModel: ChatViewModel,
+    viewModel: ChatViewModel
 ) {
     val messages = viewModel.messages
     val isLoading by viewModel.isLoading
@@ -67,7 +70,8 @@ fun ChatScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val lazyListState = rememberLazyListState()
-    val usingProModel = viewModel.usingProModel.collectAsState()
+
+    TrackActivityDestroy(viewModel)
 
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) lazyListState.animateScrollToItem(messages.lastIndex)
@@ -83,7 +87,7 @@ fun ChatScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Чат") })
+            TopAppBar(title = { Text(viewModel.name) })
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
@@ -93,20 +97,6 @@ fun ChatScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-//            Row(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(vertical = 8.dp, horizontal = 16.dp),
-//                verticalAlignment = Alignment.CenterVertically,
-//                horizontalArrangement = Arrangement.SpaceBetween,
-//            ) {
-//                Text(text = "YandexGpt-lite")
-//                Switch(
-//                    checked = usingProModel.value,
-//                    onCheckedChange = { viewModel.updateModel() })
-//                Text(text = "YandexGpt-pro")
-//            }
-
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
@@ -129,13 +119,6 @@ fun ChatScreen(
                         }
                     }
                 }
-            }
-
-            Button(
-                modifier = Modifier.padding(10.dp),
-                onClick = viewModel::addAgent
-            ) {
-                Text("Новый агент")
             }
 
             Row(
@@ -198,21 +181,34 @@ fun MessageRow(message: ChatMessageUi) {
                 .background(bubbleColor, shape = MaterialTheme.shapes.medium)
                 .padding(12.dp)
         ) {
-            if (!message.isUser) Text(text = message.model, color = Color.Red.copy(0.7f))
-            if (message.maxTokens.isNotEmpty()) Text(
-                text = "maxTokens: ${message.maxTokens}",
-                color = Color.Blue.copy(0.7f)
-            )
-            if (!message.tokens.isNullOrEmpty()) Text(
-                text = "Токены: ${message.tokens}",
-                color = Color.DarkGray.copy(0.7f)
-            )
             Spacer(Modifier.height(8.dp))
             Text(
                 text = displayedText, textAlign = TextAlign.Start)
         }
     }
 }
+
+@Composable
+fun TrackActivityDestroy(viewModel: ChatViewModel) {
+
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+
+    DisposableEffect(lifecycle) {
+
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_DESTROY) {
+                viewModel.saveChat()
+            }
+        }
+
+        lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycle.removeObserver(observer)
+        }
+    }
+}
+
 
 fun parseCardDataJson(jsonString: String): List<CardDataUi> {
     val gson = Gson()

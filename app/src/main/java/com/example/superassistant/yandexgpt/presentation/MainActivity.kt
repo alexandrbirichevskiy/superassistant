@@ -4,22 +4,68 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.Surface
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider
-import com.example.superassistant.ui.theme.SuperAssistantTheme
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.superassistant.ChatDatabaseProvider
+import com.example.superassistant.DatabaseProvider
+import com.example.superassistant.SuperAssistantRetrofit
+import com.example.superassistant.yandexgpt.data.ChatRepository
+import kotlin.Int
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val chatViewModel = ViewModelProvider(this)[ChatViewModel::class.java]
+        val db = DatabaseProvider.getDatabase(this)
+        val dbChat = ChatDatabaseProvider.getDatabase(this)
 
-        chatViewModel.sendUserMessage(true, "")
+        val dialogsFactory = DialogsViewModelFactory(db.dialogsDao())
+        val dialogsViewModel = ViewModelProvider(this, dialogsFactory)[DialogsViewModel::class.java]
+
         setContent {
-            SuperAssistantTheme {
-                Surface {
-                    ChatScreen(viewModel = chatViewModel)
+            val navController = rememberNavController()
+
+            NavHost(
+                navController = navController,
+                startDestination = "dialogs"
+            ) {
+
+                composable("dialogs") {
+                    MainDialogsScreen(navController, dialogsViewModel)
+                }
+
+                composable(
+                    route = "chat/{id}/{name}/{service}/{model}",
+                    arguments = listOf(
+                        navArgument("id") { type = NavType.IntType },
+                        navArgument("name") { type = NavType.StringType },
+                        navArgument("service") { type = NavType.StringType },
+                        navArgument("model") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+
+                    val id = backStackEntry.arguments?.getInt("id") ?: 0
+                    val name = backStackEntry.arguments?.getString("name") ?: ""
+                    val service = backStackEntry.arguments?.getString("service") ?: ""
+                    val model = backStackEntry.arguments?.getString("model") ?: ""
+
+                    val chatViewModel = remember {
+                        val retrofit = SuperAssistantRetrofit()
+                        val repository = ChatRepository(retrofit, dbChat.requestDao())
+                        val dialog = Dialog(id, name, service, model)
+                        ChatViewModel(dialog, repository)
+                    }
+
+                    ChatScreen(
+                        viewModel = chatViewModel
+                    )
                 }
             }
         }

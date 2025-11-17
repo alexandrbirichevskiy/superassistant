@@ -1,7 +1,6 @@
 package com.example.superassistant
 
 import android.util.Log
-import com.example.superassistant.yandexgpt.data.LlmApi
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.Interceptor
@@ -12,7 +11,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-internal class SuperAssistantRetrofit {
+class SuperAssistantRetrofit {
 
     val gson: Gson = GsonBuilder()
         .serializeNulls()
