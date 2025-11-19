@@ -1,16 +1,17 @@
 package com.example.superassistant.yandexgpt.presentation
 
 import RequestDBO
-import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.superassistant.SuperAssistantRetrofit
+import com.example.superassistant.Keys
 import com.example.superassistant.yandexgpt.data.ChatRepository
 import com.example.superassistant.yandexgpt.data.network.dto.MessageRequestDTO
 import com.example.superassistant.yandexgpt.presentation.models.Agent
 import com.example.superassistant.yandexgpt.presentation.models.ChatMessageUi
+import com.google.gson.JsonParser
+import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.launch
 
 class ChatViewModel(
@@ -24,27 +25,39 @@ class ChatViewModel(
     var lastError = mutableStateOf<String?>(null)
 
     val agent = Agent(
-        system = "Ты - рыба Немо из мультика в поисках Немо",
+        system = Keys.SYSTEM,
         name = dialog.model,
-        temperature = 0.5,
+        temperature = 0.0,
         maxTokens = "1000"
     )
 
+
     private val agentList = listOf(agent)
 
-
     init {
+        connect()
         viewModelScope.launch {
             val restoredData = repository.getChat(dialog.id.toLong())
             if (restoredData == null) {
-                sendUserMessage(true, "")
+                sendUserMessage(true, "", true)
             } else {
                 restore(restoredData)
             }
         }
+        viewModelScope.launch {
+            repository.message.collect {
+                sendUserMessage(false, it.orEmpty(), false)
+            }
+        }
     }
 
-    fun restore(data:  RequestDBO) {
+    fun connect() {
+        viewModelScope.launch {
+            repository.connect()
+        }
+    }
+
+    fun restore(data: RequestDBO) {
         data.messages.forEach {
             if (it.role != "system") {
                 messages.add(
@@ -74,17 +87,20 @@ class ChatViewModel(
         }
     }
 
-    fun sendUserMessage(isSystem: Boolean = false, userText: String) {
+    fun sendUserMessage(isSystem: Boolean = false, userText: String, isShow: Boolean) {
         if (userText.isBlank() && !isSystem) return
         if (isSystem) {
             send()
         } else {
-            messages.add(
-                ChatMessageUi(
-                    userText.trim(),
-                    isUser = true,
+            if (isShow) {
+                messages.add(
+                    ChatMessageUi(
+                        userText.trim(),
+                        isUser = true,
+                    )
                 )
-            )
+            }
+
             agentList.forEach {
                 it.history.add(
                     MessageRequestDTO(
@@ -109,12 +125,16 @@ class ChatViewModel(
 
                 result.fold(onSuccess = { model ->
 
-                    messages.add(
-                        ChatMessageUi(
-                            model.result.alternatives.first().message.text,
-                            isUser = false,
+                    if (isValidJson(model.result.alternatives.first().message.text)) {
+                        repository.send(model.result.alternatives.first().message.text)
+                    } else {
+                        messages.add(
+                            ChatMessageUi(
+                                model.result.alternatives.first().message.text,
+                                isUser = false,
+                            )
                         )
-                    )
+                    }
 
                     it.history.add(
                         MessageRequestDTO(
@@ -134,5 +154,14 @@ class ChatViewModel(
             }
         }
 
+    }
+
+    private fun isValidJson(input: String): Boolean {
+        return try {
+            JsonParser.parseString(input)
+            true
+        } catch (e: JsonSyntaxException) {
+            false
+        }
     }
 }

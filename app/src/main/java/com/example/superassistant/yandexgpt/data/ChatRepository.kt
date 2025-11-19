@@ -1,6 +1,7 @@
 package com.example.superassistant.yandexgpt.data
 
 import CompletionOptionsDBO
+import McpWebSocketClient
 import MessageDBO
 import RequestDBO
 import ResponseFormatDBO
@@ -32,6 +33,12 @@ class ChatRepository(
         )
     }
 
+    private val mcp by lazy {
+        McpWebSocketClient()
+    }
+
+    val message = mcp.message
+
     private var lastPrompt: PromptRequestDTO? = null
 
     suspend fun saveRequest(dialog: Dialog) {
@@ -58,6 +65,13 @@ class ChatRepository(
 
     suspend fun getChat(id: Long) = dao.getRequestById(id)
 
+    fun connect() {
+        mcp.connect()
+    }
+
+    fun send(text: String) {
+        mcp.send(text)
+    }
 
     suspend fun sendRequest(
         agent: Agent,

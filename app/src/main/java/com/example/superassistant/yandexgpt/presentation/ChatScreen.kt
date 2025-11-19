@@ -141,7 +141,7 @@ fun ChatScreen(
                     onClick = {
                         val text = textState.value.trim()
                         if (text.isNotEmpty() && !isLoading) {
-                            viewModel.sendUserMessage(false, text)
+                            viewModel.sendUserMessage(false, text, true)
                             textState.value = ""
                         } else if (isLoading) {
                             Toast.makeText(
@@ -208,7 +208,6 @@ fun TrackActivityDestroy(viewModel: ChatViewModel) {
         }
     }
 }
-
 
 fun parseCardDataJson(jsonString: String): List<CardDataUi> {
     val gson = Gson()

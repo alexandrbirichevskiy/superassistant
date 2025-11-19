@@ -1,8 +1,8 @@
 package com.example.superassistant.yandexgpt.presentation
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.superassistant.GPTModels
 import com.example.superassistant.SuperAssistantRetrofit
 import com.example.superassistant.yandexgpt.data.DialogsRepository
 import com.example.superassistant.yandexgpt.data.database.DialogsDao
@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 class DialogsViewModel(private val dao: DialogsDao) : ViewModel() {
 
-    private val repository by lazy { DialogsRepository(dao) }
+    private val repository by lazy { DialogsRepository(SuperAssistantRetrofit(), dao) }
 
     val dialogs = repository.getDialogs().stateIn(
         viewModelScope,
@@ -21,7 +21,7 @@ class DialogsViewModel(private val dao: DialogsDao) : ViewModel() {
         emptyList()
     )
     val services = MutableStateFlow(listOf("YandexGPT"))
-    val models = MutableStateFlow(listOf("yandexgpt/latest", "yandexgpt-lite"))
+    val models = MutableStateFlow(listOf(GPTModels.YANDEX_LITE, GPTModels.YANDEX_PRO))
 
     fun addDialog(name: String, service: String, model: String) {
         viewModelScope.launch {

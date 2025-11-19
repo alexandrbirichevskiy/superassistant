@@ -14,9 +14,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.superassistant.ChatDatabaseProvider
 import com.example.superassistant.DatabaseProvider
+import com.example.superassistant.GPTModels
 import com.example.superassistant.SuperAssistantRetrofit
 import com.example.superassistant.yandexgpt.data.ChatRepository
-import kotlin.Int
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,7 +54,13 @@ class MainActivity : ComponentActivity() {
                     val id = backStackEntry.arguments?.getInt("id") ?: 0
                     val name = backStackEntry.arguments?.getString("name") ?: ""
                     val service = backStackEntry.arguments?.getString("service") ?: ""
-                    val model = backStackEntry.arguments?.getString("model") ?: ""
+                    val modelKey = backStackEntry.arguments?.getString("model") ?: ""
+
+                    val model = when (modelKey) {
+                        GPTModels.YANDEX_PRO.name -> GPTModels.YANDEX_PRO.model
+                        GPTModels.YANDEX_LITE.name -> GPTModels.YANDEX_LITE.model
+                        else -> ""
+                    }
 
                     val chatViewModel = remember {
                         val retrofit = SuperAssistantRetrofit()

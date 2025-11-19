@@ -1,6 +1,5 @@
 package com.example.superassistant.yandexgpt.presentation
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.superassistant.GPTModels
 import kotlinx.coroutines.flow.StateFlow
 
 @Composable
@@ -70,6 +70,15 @@ fun MainDialogsScreen(
             reverseLayout = false,
             state = lazyListState
         ) {
+//            item {
+//                Button(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    onClick = { viewModel.connect() }
+//                ) {
+//                    Text("Подключится к MCP")
+//                }
+//            }
+
             itemsIndexed(dialogs.value) { _, item ->
                 DialogItem(
                     dialog = item,
@@ -162,7 +171,7 @@ fun DialogItem(
 @Composable
 fun CreateDialogBottomSheet(
     services: StateFlow<List<String>>,
-    models: StateFlow<List<String>>,
+    models: StateFlow<List<GPTModels>>,
     onDismiss: () -> Unit,
     onCreate: (String, String, String) -> Unit
 ) {
@@ -264,9 +273,9 @@ fun CreateDialogBottomSheet(
                 ) {
                     models.forEach { model ->
                         DropdownMenuItem(
-                            text = { Text(model) },
+                            text = { Text(model.model) },
                             onClick = {
-                                selectedModel = model
+                                selectedModel = model.name
                                 expandedModels = false
                             }
                         )
