@@ -1,5 +1,6 @@
 package com.example.superassistant.yandexgpt.presentation
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -171,13 +172,13 @@ fun DialogItem(
 @Composable
 fun CreateDialogBottomSheet(
     services: StateFlow<List<String>>,
-    models: StateFlow<List<GPTModels>>,
+    models: StateFlow<List<String>>,
     onDismiss: () -> Unit,
     onCreate: (String, String, String) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
     val services = services.collectAsState().value
-    val models = models.collectAsState().value
+    val modelsValue = models.collectAsState().value
     var name by remember { mutableStateOf("") }
     var expandedServices by remember { mutableStateOf(false) }
     var selectedService by remember { mutableStateOf("") }
@@ -271,11 +272,11 @@ fun CreateDialogBottomSheet(
                     expanded = expandedModels,
                     onDismissRequest = { expandedModels = false }
                 ) {
-                    models.forEach { model ->
+                    modelsValue.forEach { model ->
                         DropdownMenuItem(
-                            text = { Text(model.model) },
+                            text = { Text(model) },
                             onClick = {
-                                selectedModel = model.name
+                                selectedModel = model
                                 expandedModels = false
                             }
                         )

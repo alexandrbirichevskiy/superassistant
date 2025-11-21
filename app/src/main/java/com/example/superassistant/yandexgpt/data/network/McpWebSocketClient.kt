@@ -1,5 +1,3 @@
-import androidx.compose.runtime.MutableState
-import com.example.superassistant.Keys
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import okhttp3.*
@@ -22,7 +20,7 @@ class McpWebSocketClient {
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
-                message.update { text }
+                message.update { (text) }
                 println("MESSAGE: $text")
             }
 

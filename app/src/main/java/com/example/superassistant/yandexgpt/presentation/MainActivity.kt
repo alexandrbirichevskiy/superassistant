@@ -16,6 +16,7 @@ import com.example.superassistant.ChatDatabaseProvider
 import com.example.superassistant.DatabaseProvider
 import com.example.superassistant.GPTModels
 import com.example.superassistant.SuperAssistantRetrofit
+import com.example.superassistant.chatgpt.ChatGptRepository
 import com.example.superassistant.yandexgpt.data.ChatRepository
 
 class MainActivity : ComponentActivity() {
@@ -59,14 +60,16 @@ class MainActivity : ComponentActivity() {
                     val model = when (modelKey) {
                         GPTModels.YANDEX_PRO.name -> GPTModels.YANDEX_PRO.model
                         GPTModels.YANDEX_LITE.name -> GPTModels.YANDEX_LITE.model
-                        else -> ""
+                        else -> modelKey
                     }
 
                     val chatViewModel = remember {
                         val retrofit = SuperAssistantRetrofit()
-                        val repository = ChatRepository(retrofit, dbChat.requestDao())
                         val dialog = Dialog(id, name, service, model)
-                        ChatViewModel(dialog, repository)
+                        ChatViewModel(
+                            dialog,
+                            ChatRepository(retrofit, dbChat.requestDao()),
+                            ChatGptRepository(retrofit))
                     }
 
                     ChatScreen(

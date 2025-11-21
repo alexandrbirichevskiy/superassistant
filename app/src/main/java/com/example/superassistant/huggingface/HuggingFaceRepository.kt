@@ -29,7 +29,6 @@ internal class HuggingFaceRepository(private val retrofit: SuperAssistantRetrofi
 
         return try {
             val response = api.get(request)
-            Log.i("OLOLO", agent.name)
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body != null) {

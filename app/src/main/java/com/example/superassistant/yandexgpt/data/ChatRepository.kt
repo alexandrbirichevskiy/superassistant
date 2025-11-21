@@ -19,6 +19,8 @@ import com.example.superassistant.yandexgpt.data.network.dto.RootResponseDTO
 import com.example.superassistant.yandexgpt.presentation.Dialog
 import com.example.superassistant.yandexgpt.presentation.models.Agent
 import com.google.gson.JsonObject
+import com.google.gson.annotations.SerializedName
+import org.json.JSONObject
 
 class ChatRepository(
     private val retrofit: SuperAssistantRetrofit,
@@ -69,8 +71,17 @@ class ChatRepository(
         mcp.connect()
     }
 
-    fun send(text: String) {
-        mcp.send(text)
+    fun send(text: String, name: String?, id: String?) {
+
+        val args = JSONObject(text)
+
+        val root = JSONObject()
+            .put("type", "call_tool")
+            .put("id", "1")
+            .put("tool", name)
+            .put("args", args)
+
+        mcp.send(root.toString())
     }
 
     suspend fun sendRequest(
