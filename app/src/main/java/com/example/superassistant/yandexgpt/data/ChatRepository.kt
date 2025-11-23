@@ -36,10 +36,15 @@ class ChatRepository(
     }
 
     private val mcp by lazy {
-        McpWebSocketClient()
+        McpWebSocketClient("ws://10.0.2.2:8080/mcp")
+    }
+
+    private val mcpAgain by lazy {
+        McpWebSocketClient("ws://10.0.2.2:8888/mcp")
     }
 
     val message = mcp.message
+    val messageAgain = mcpAgain.message
 
     private var lastPrompt: PromptRequestDTO? = null
 
@@ -69,9 +74,10 @@ class ChatRepository(
 
     fun connect() {
         mcp.connect()
+        mcpAgain.connect()
     }
 
-    fun send(text: String, name: String?, id: String?) {
+    fun send(text: String, name: String?) {
 
         val args = JSONObject(text)
 
@@ -81,7 +87,11 @@ class ChatRepository(
             .put("tool", name)
             .put("args", args)
 
-        mcp.send(root.toString())
+        if (name == "add_movie" || name == "get_movie_short") {
+            mcp.send(root.toString())
+        } else {
+            mcpAgain.send(root.toString())
+        }
     }
 
     suspend fun sendRequest(

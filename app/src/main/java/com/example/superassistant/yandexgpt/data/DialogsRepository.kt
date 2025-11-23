@@ -1,7 +1,5 @@
 package com.example.superassistant.yandexgpt.data
 
-import McpWebSocketClient
-import android.util.Log
 import com.example.superassistant.Keys
 import com.example.superassistant.SuperAssistantRetrofit
 import com.example.superassistant.yandexgpt.data.database.DialogsDao
@@ -24,10 +22,6 @@ class DialogsRepository(
     }
 
     fun getDialogs() = dao.getAll().map { it.map { dbo -> dbo.toModel() } }
-
-    fun connect() {
-        McpWebSocketClient().connect()
-    }
 
     suspend fun addDialog(dialog: Dialog) {
         dao.insert(dialog.toDBO())

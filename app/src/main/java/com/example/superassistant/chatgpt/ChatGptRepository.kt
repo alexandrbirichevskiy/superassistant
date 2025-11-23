@@ -39,13 +39,15 @@ class ChatGptRepository(private val retrofit: SuperAssistantRetrofit) {
             Tool(
                 function = ToolFunction(
                     name = "add_movie",
-                    description = "Добавить фильм в список к просмотру",
+                    description = "Добавить фильм в список к просмотру. " +
+                            "определяешь жанр, год и подробный description сам (если они не указаны)",
                     parameters = mapOf(
                         "type" to "object",
                         "properties" to mapOf(
                             "title" to mapOf("type" to "string"),
                             "genre" to mapOf("type" to "string"),
-                            "year" to mapOf("type" to "integer")
+                            "year" to mapOf("type" to "integer"),
+                            "description" to mapOf("type" to "string")
                         ),
                         "required" to listOf("title")
                     )
@@ -54,12 +56,12 @@ class ChatGptRepository(private val retrofit: SuperAssistantRetrofit) {
             Tool(
                 function = ToolFunction(
                     name = "get_movie_short",
-                    description = "Найти в интернете и рассказать краткое описание о фильме",
+                    description = "Найти в интернете и рассказать краткое описание о фильме. " +
+                            "определяешь описание cам (если они не указаны) и выводишь его в content",
                     parameters = mapOf(
                         "type" to "object",
                         "properties" to mapOf(
                             "title" to mapOf("type" to "string"),
-                            "description" to mapOf("type" to "string")
                         ),
                         "required" to listOf("title")
                     )
@@ -76,6 +78,18 @@ class ChatGptRepository(private val retrofit: SuperAssistantRetrofit) {
                             "description" to mapOf("type" to "string")
                         ),
                         "required" to listOf("title")
+                    )
+                )
+            ),
+            Tool(
+                function = ToolFunction(
+                    name = "get_last_three_movies",
+                    description = "Показать последние добавленные фильма",
+                    parameters = mapOf(
+                        "type" to "object",
+                        "properties" to mapOf(
+                            "title" to mapOf("type" to "string"),
+                        ),
                     )
                 )
             )

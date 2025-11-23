@@ -12,8 +12,6 @@ import com.example.superassistant.yandexgpt.data.ChatRepository
 import com.example.superassistant.yandexgpt.data.network.dto.MessageRequestDTO
 import com.example.superassistant.yandexgpt.presentation.models.Agent
 import com.example.superassistant.yandexgpt.presentation.models.ChatMessageUi
-import com.google.gson.JsonParser
-import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.launch
 
 class ChatViewModel(
@@ -49,6 +47,12 @@ class ChatViewModel(
         }
         viewModelScope.launch {
             repository.message.collect {
+                sendUserMessage(false, it.orEmpty(), false)
+            }
+        }
+
+        viewModelScope.launch {
+            repository.messageAgain.collect {
                 sendUserMessage(false, it.orEmpty(), false)
             }
         }
@@ -138,8 +142,7 @@ class ChatViewModel(
                     if (!(a?.function?.arguments.isNullOrEmpty()) && text.isNullOrEmpty()) {
                         repository.send(
                             text = a.function.arguments,
-                            name = a?.function?.name,
-                            id = a?.id
+                            name = a.function.name,
                         )
                     }
 

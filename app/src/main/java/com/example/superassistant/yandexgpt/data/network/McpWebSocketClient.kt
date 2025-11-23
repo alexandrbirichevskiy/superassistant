@@ -2,7 +2,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import okhttp3.*
 
-class McpWebSocketClient {
+class McpWebSocketClient(private val url: String) {
 
     private val client = OkHttpClient()
     private var socket: WebSocket? = null
@@ -10,7 +10,7 @@ class McpWebSocketClient {
 
     fun connect() {
         val request = Request.Builder()
-            .url("ws://10.0.2.2:8080/mcp")  // важно: 10.0.2.2 для Android-эмулятора
+            .url(url)  // важно: 10.0.2.2 для Android-эмулятора
             .build()
 
         socket = client.newWebSocket(request, object : WebSocketListener() {
