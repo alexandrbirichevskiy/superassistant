@@ -8,13 +8,11 @@ import ResponseFormatDBO
 import com.example.superassistant.Keys
 import com.example.superassistant.SuperAssistantRetrofit
 import com.example.superassistant.yandexgpt.data.database.ChatDao
-import com.example.superassistant.yandexgpt.data.database.DialogsDao
 import com.example.superassistant.yandexgpt.data.network.dto.CompletionOptionsRequestDTO
 import com.example.superassistant.yandexgpt.data.network.dto.PromptRequestDTO
 import com.example.superassistant.yandexgpt.data.network.dto.TypeRequestDTO
 import com.example.superassistant.yandexgpt.data.network.YandexGptApi
 import com.example.superassistant.yandexgpt.data.network.dto.MessageRequestDTO
-import com.example.superassistant.yandexgpt.data.network.dto.ResultResponseDTO
 import com.example.superassistant.yandexgpt.data.network.dto.RootResponseDTO
 import com.example.superassistant.yandexgpt.presentation.Dialog
 import com.example.superassistant.yandexgpt.presentation.models.Agent
@@ -73,8 +71,8 @@ class ChatRepository(
     suspend fun getChat(id: Long) = dao.getRequestById(id)
 
     fun connect() {
-        mcp.connect()
-        mcpAgain.connect()
+//        mcp.connect()
+//        mcpAgain.connect()
     }
 
     fun send(text: String, name: String?) {

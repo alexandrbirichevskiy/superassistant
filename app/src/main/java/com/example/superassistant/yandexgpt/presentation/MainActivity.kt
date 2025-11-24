@@ -17,6 +17,7 @@ import com.example.superassistant.DatabaseProvider
 import com.example.superassistant.GPTModels
 import com.example.superassistant.SuperAssistantRetrofit
 import com.example.superassistant.chatgpt.ChatGptRepository
+import com.example.superassistant.ollama.OllamaRepository
 import com.example.superassistant.yandexgpt.data.ChatRepository
 
 class MainActivity : ComponentActivity() {
@@ -69,7 +70,9 @@ class MainActivity : ComponentActivity() {
                         ChatViewModel(
                             dialog,
                             ChatRepository(retrofit, dbChat.requestDao()),
-                            ChatGptRepository(retrofit))
+                            ChatGptRepository(retrofit),
+                            OllamaRepository(retrofit = retrofit)
+                        )
                     }
 
                     ChatScreen(

@@ -1,5 +1,6 @@
 package com.example.superassistant.yandexgpt.presentation
 
+import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -70,6 +71,8 @@ fun ChatScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val lazyListState = rememberLazyListState()
+
+    loadAllAssetsFiles(viewModel)
 
     TrackActivityDestroy(viewModel)
 
@@ -208,6 +211,42 @@ fun TrackActivityDestroy(viewModel: ChatViewModel) {
         }
     }
 }
+
+@Composable
+fun loadAllAssetsFiles(viewModel: ChatViewModel): List<Pair<String, String>> {
+    val context = LocalContext.current
+
+    // Сохранённое состояние, чтобы не перезагружать каждый recomposition
+    val files by remember {
+        mutableStateOf(loadAllTextFilesFromAssets(context))
+    }
+
+    viewModel.processFiles(files)
+
+    return files
+}
+
+fun loadAllTextFilesFromAssets(context: Context): List<Pair<String, String>> {
+    val assetManager = context.assets
+
+    // Получаем список файлов из корня assets
+    val fileNames = assetManager.list("") ?: emptyArray()
+
+    val result = mutableListOf<Pair<String, String>>() // (fileName → content)
+
+    fileNames.forEach { fileName ->
+        if (fileName.endsWith(".txt")) {
+            val text = assetManager.open(fileName)
+                .bufferedReader()
+                .readText()
+
+            result.add(fileName to text)
+        }
+    }
+
+    return result
+}
+
 
 fun parseCardDataJson(jsonString: String): List<CardDataUi> {
     val gson = Gson()

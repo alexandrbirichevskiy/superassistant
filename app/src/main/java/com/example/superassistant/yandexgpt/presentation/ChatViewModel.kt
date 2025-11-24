@@ -8,16 +8,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.superassistant.Keys
 import com.example.superassistant.chatgpt.ChatGptRepository
+import com.example.superassistant.ollama.OllamaRepository
 import com.example.superassistant.yandexgpt.data.ChatRepository
 import com.example.superassistant.yandexgpt.data.network.dto.MessageRequestDTO
 import com.example.superassistant.yandexgpt.presentation.models.Agent
 import com.example.superassistant.yandexgpt.presentation.models.ChatMessageUi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 
 class ChatViewModel(
     private val dialog: Dialog,
     private val repository: ChatRepository,
-    private val chatGptRepository: ChatGptRepository
+    private val chatGptRepository: ChatGptRepository,
+    private val ollamaRepository: OllamaRepository
 ) : ViewModel() {
 
     val name = dialog.name
@@ -37,24 +41,33 @@ class ChatViewModel(
 
     init {
         connect()
-        viewModelScope.launch {
-            val restoredData = repository.getChat(dialog.id.toLong())
-            if (restoredData == null) {
-                sendUserMessage(true, "", true)
-            } else {
-                restore(restoredData)
-            }
-        }
-        viewModelScope.launch {
-            repository.message.collect {
-                sendUserMessage(false, it.orEmpty(), false)
-            }
-        }
+//        viewModelScope.launch {
+//            val restoredData = repository.getChat(dialog.id.toLong())
+//            if (restoredData == null) {
+//                sendUserMessage(true, "", true)
+//            } else {
+//                restore(restoredData)
+//            }
+//        }
+//        viewModelScope.launch {
+//            repository.message.collect {
+//                sendUserMessage(false, it.orEmpty(), false)
+//            }
+//        }
+//
+//        viewModelScope.launch {
+//            repository.messageAgain.collect {
+//                sendUserMessage(false, it.orEmpty(), false)
+//            }
+//        }
+    }
 
-        viewModelScope.launch {
-            repository.messageAgain.collect {
-                sendUserMessage(false, it.orEmpty(), false)
-            }
+    fun processFiles(files: List<Pair<String, String>>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            ollamaRepository.processFiles(
+                files = files,
+                outputJson = "/storage/emulated/0/Documents/embedding_index.json"
+            )
         }
     }
 
@@ -98,7 +111,7 @@ class ChatViewModel(
         if (userText.isBlank() && !isSystem) return
         Log.e("OLOLO", "User: $userText")
         if (isSystem) {
-            send()
+//            send()
         } else {
 //            if (isShow) {
             messages.add(
@@ -117,7 +130,7 @@ class ChatViewModel(
                     )
                 )
             }
-            send()
+//            send()
         }
     }
 
