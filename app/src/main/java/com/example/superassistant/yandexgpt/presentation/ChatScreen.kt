@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -72,7 +73,7 @@ fun ChatScreen(
     val context = LocalContext.current
     val lazyListState = rememberLazyListState()
 
-    loadAllAssetsFiles(viewModel)
+//    loadAllAssetsFiles(viewModel)
 
     TrackActivityDestroy(viewModel)
 
@@ -140,6 +141,25 @@ fun ChatScreen(
                     singleLine = false,
                     maxLines = 4
                 )
+                IconButton(
+                    onClick = {
+                        val text = textState.value.trim()
+                        if (text.isNotEmpty() && !isLoading) {
+                            viewModel.ask(text)
+                            textState.value = ""
+                        } else if (isLoading) {
+                            Toast.makeText(
+                                context,
+                                "Пожалуйста подождите, ответ загружается...",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                ) {
+                    Icon(imageVector = Icons.Default.Send, contentDescription = "Send")
+                    Text("Use RAG")
+                }
+
                 IconButton(
                     onClick = {
                         val text = textState.value.trim()
@@ -246,7 +266,6 @@ fun loadAllTextFilesFromAssets(context: Context): List<Pair<String, String>> {
 
     return result
 }
-
 
 fun parseCardDataJson(jsonString: String): List<CardDataUi> {
     val gson = Gson()

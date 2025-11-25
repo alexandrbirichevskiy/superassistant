@@ -15,7 +15,6 @@ import com.example.superassistant.yandexgpt.presentation.models.Agent
 import com.example.superassistant.yandexgpt.presentation.models.ChatMessageUi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.Dispatcher
 
 class ChatViewModel(
     private val dialog: Dialog,
@@ -40,33 +39,13 @@ class ChatViewModel(
     private val agentList = listOf(agent)
 
     init {
-        connect()
-//        viewModelScope.launch {
-//            val restoredData = repository.getChat(dialog.id.toLong())
-//            if (restoredData == null) {
-//                sendUserMessage(true, "", true)
-//            } else {
-//                restore(restoredData)
-//            }
-//        }
-//        viewModelScope.launch {
-//            repository.message.collect {
-//                sendUserMessage(false, it.orEmpty(), false)
-//            }
-//        }
-//
-//        viewModelScope.launch {
-//            repository.messageAgain.collect {
-//                sendUserMessage(false, it.orEmpty(), false)
-//            }
-//        }
+        sendUserMessage(isSystem = true, userText = "", true)
     }
 
     fun processFiles(files: List<Pair<String, String>>) {
         viewModelScope.launch(Dispatchers.IO) {
             ollamaRepository.processFiles(
-                files = files,
-                outputJson = "/storage/emulated/0/Documents/embedding_index.json"
+                files = files
             )
         }
     }
@@ -107,20 +86,29 @@ class ChatViewModel(
         }
     }
 
+    fun ask(userText: String) {
+        viewModelScope.launch {
+            val rag = ollamaRepository.getRag {
+                sendUserMessage(false, it, true)
+            }
+
+            rag.ask(userText)
+        }
+    }
+
     fun sendUserMessage(isSystem: Boolean = false, userText: String, isShow: Boolean) {
         if (userText.isBlank() && !isSystem) return
-        Log.e("OLOLO", "User: $userText")
         if (isSystem) {
-//            send()
+            send()
         } else {
-//            if (isShow) {
-            messages.add(
-                ChatMessageUi(
-                    userText.trim(),
-                    isUser = true,
+            if (isShow) {
+                messages.add(
+                    ChatMessageUi(
+                        userText.trim(),
+                        isUser = true,
+                    )
                 )
-            )
-//            }
+            }
 
             agentList.forEach {
                 it.history.add(
@@ -130,7 +118,7 @@ class ChatViewModel(
                     )
                 )
             }
-//            send()
+            send()
         }
     }
 

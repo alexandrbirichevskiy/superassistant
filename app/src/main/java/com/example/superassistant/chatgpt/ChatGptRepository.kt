@@ -102,7 +102,7 @@ class ChatGptRepository(private val retrofit: SuperAssistantRetrofit) {
 //            maxTokens = agent.maxTokens.toInt(),
             stream = false,
             messages = agent.history.map { ChatGptMessageDto(it.role, it.text) },
-            tools = tools
+//            tools = tools
         )
 
         return try {

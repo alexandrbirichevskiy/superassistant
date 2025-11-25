@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
                             dialog,
                             ChatRepository(retrofit, dbChat.requestDao()),
                             ChatGptRepository(retrofit),
-                            OllamaRepository(retrofit = retrofit)
+                            OllamaRepository(retrofit = retrofit, application.applicationContext)
                         )
                     }
 

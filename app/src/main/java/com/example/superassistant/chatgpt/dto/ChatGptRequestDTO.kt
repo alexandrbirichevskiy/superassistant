@@ -8,7 +8,7 @@ data class ChatGptRequestDto(
     @SerializedName("temperature") val temperature: Double? = null,
 //    @SerializedName("max_tokens") val maxTokens: Int? = null,
     @SerializedName("stream") val stream: Boolean? = null,
-    @SerializedName("tools") val tools: List<Tool>
+//    @SerializedName("tools") val tools: List<Tool>
 )
 
 data class ChatGptMessageDto(
