@@ -6,56 +6,49 @@ import kotlin.math.sqrt
 class RagEngine(
     private val chunks: List<Chunk>,
     private val embedClient: suspend (String) -> List<Double>,
-    private val llmClient: suspend (String) -> Unit
+    private val llmClient: suspend (String) -> Unit,
+    private val reranker: suspend (String, List<Pair<Chunk, Double>>) -> List<Chunk>
 ) {
 
-    // Косинусная близость
     private fun cosineSimilarity(a: List<Double>, b: List<Double>): Double {
         val dot = a.zip(b).sumOf { (x, y) -> (x * y) }
-        val normA = sqrt(a.sumOf { it * it })
-        val normB = sqrt(b.sumOf { it * it })
-        val similarity = dot / (normA * normB)
-        return similarity
+        val normA = sqrt(a.sumOf { (it * it) })
+        val normB = sqrt(b.sumOf { (it * it) })
+        return dot / (normA * normB)
     }
 
-    // Поиск топ-N релевантных чанков
-    private fun searchRelevantChunks(
-        queryEmbedding: List<Double>,
-        topN: Int = 5
-    ): List<Chunk> {
-        return chunks
-            .asSequence()
-            .map { chunk ->
-                val sim = cosineSimilarity(queryEmbedding, chunk.embedding)
-                chunk to sim
-            }
+    private fun initialSearch(
+        emb: List<Double>,
+        topN: Int = 10
+    ): List<Pair<Chunk, Double>> {
+        return chunks.map { chunk ->
+            chunk to cosineSimilarity(emb, chunk.embedding)
+        }
             .sortedByDescending { it.second }
             .take(topN)
-            .map { it.first }
-            .toList()
     }
 
-    // Основная функция RAG
     suspend fun ask(question: String) {
+        val qEmbedding = embedClient(question)
 
-        // 1) Эмбеддинг вопроса
-        val queryEmbedding = embedClient(question)
+        // Этап 1. Поиск
+        val candidates = initialSearch(qEmbedding)
 
-        // 2) Поиск релевантных чанков
-        val relevant = searchRelevantChunks(queryEmbedding)
+        // Этап 2. Reranker / фильтр
+        val filtered = reranker(question, candidates)
 
-        // 3) Формирование промпта
+        // Этап 3. Формирование промпта
         val context = buildString {
-            appendLine("Используй приведённый контекст для ответа. Если контекста недостаточно — скажи об этом.\n")
+            appendLine("Используй только приведённый контекст.")
             appendLine("=== КОНТЕКСТ ===")
-            relevant.forEachIndexed { index, c ->
+            filtered.forEachIndexed { index, c ->
                 appendLine("[Чанк $index]: ${c.text}")
             }
-            appendLine("\n=== ВОПРОС ===")
-            appendLine(question)
+            appendLine("\n=== ВОПРОС ===\n$question")
         }
 
-        // 4) Запрос к LLM
+        // Этап 4. Ответ LLM
         llmClient(context)
     }
 }
+

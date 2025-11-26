@@ -24,11 +24,15 @@ class OllamaRepository(
         )
     }
 
-    fun getRag(llmClient: suspend (String) -> Unit): RagEngine {
+    fun getRag(
+        llmClient: suspend (String) -> Unit,
+        reranker: suspend (String, List<Pair<Chunk, Double>>) -> List<Chunk>
+    ): RagEngine {
         return RagEngine(
             chunks = readJson(appContext, "lol.json"),
             embedClient = { getEmbeddingQuestion(it) },
-            llmClient = llmClient
+            llmClient = llmClient,
+            reranker = reranker
         )
     }
 

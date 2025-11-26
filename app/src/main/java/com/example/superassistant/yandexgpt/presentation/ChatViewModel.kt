@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.superassistant.Keys
 import com.example.superassistant.chatgpt.ChatGptRepository
 import com.example.superassistant.ollama.OllamaRepository
+import com.example.superassistant.ollama.models.Chunk
 import com.example.superassistant.yandexgpt.data.ChatRepository
 import com.example.superassistant.yandexgpt.data.network.dto.MessageRequestDTO
 import com.example.superassistant.yandexgpt.presentation.models.Agent
@@ -86,11 +87,23 @@ class ChatViewModel(
         }
     }
 
+    val thresholdReranker: suspend (String, List<Pair<Chunk, Double>>) -> List<Chunk> =
+        { _, list ->
+            list.filter {
+                if (dialog.name == "Без фильтра") it.second >= 0 else it.second >= 0.736
+            }.map {
+                Log.e("OLOLO", "${it.first.id}: ${it.second}")
+                it.first
+            }
+        }
+
+
     fun ask(userText: String) {
         viewModelScope.launch {
-            val rag = ollamaRepository.getRag {
-                sendUserMessage(false, it, true)
-            }
+            val rag = ollamaRepository.getRag(
+                llmClient = { sendUserMessage(false, it, true) },
+                reranker = thresholdReranker
+            )
 
             rag.ask(userText)
         }
