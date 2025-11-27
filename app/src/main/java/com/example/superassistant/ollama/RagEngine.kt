@@ -1,12 +1,17 @@
 package com.example.superassistant.ollama
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import com.example.superassistant.ollama.models.Chunk
 import kotlin.math.sqrt
 
 class RagEngine(
     private val chunks: List<Chunk>,
     private val embedClient: suspend (String) -> List<Double>,
-    private val llmClient: suspend (String) -> Unit,
+    private val llmClient: suspend (AnnotatedString) -> Unit,
     private val reranker: suspend (String, List<Pair<Chunk, Double>>) -> List<Chunk>
 ) {
 
@@ -38,11 +43,17 @@ class RagEngine(
         val filtered = reranker(question, candidates)
 
         // Этап 3. Формирование промпта
-        val context = buildString {
+        val context = buildAnnotatedString {
             appendLine("Используй только приведённый контекст.")
             appendLine("=== КОНТЕКСТ ===")
             filtered.forEachIndexed { index, c ->
-                appendLine("[Чанк $index]: ${c.text}")
+                appendLine("\n")
+                withStyle(style = SpanStyle(color = Color.Blue)) {
+                    append("${c.fileName} [#${c.id}]")
+                }
+                appendLine("\n")
+                appendLine(c.text)
+                appendLine("\n")
             }
             appendLine("\n=== ВОПРОС ===\n$question")
         }

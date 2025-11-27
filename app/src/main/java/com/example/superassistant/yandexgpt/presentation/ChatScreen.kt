@@ -164,7 +164,7 @@ fun ChatScreen(
                     onClick = {
                         val text = textState.value.trim()
                         if (text.isNotEmpty() && !isLoading) {
-                            viewModel.sendUserMessage(false, text, true)
+                            viewModel.sendUserMessage(false, AnnotatedString(text), true)
                             textState.value = ""
                         } else if (isLoading) {
                             Toast.makeText(
@@ -193,7 +193,7 @@ fun MessageRow(message: ChatMessageUi) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                clipboardManager.setText(AnnotatedString(displayedText))
+                clipboardManager.setText(displayedText)
 //                displayedText = parseCardDataJson(message.text).toString()
             },
         horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start

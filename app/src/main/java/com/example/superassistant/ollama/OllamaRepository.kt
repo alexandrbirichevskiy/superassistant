@@ -2,6 +2,7 @@ package com.example.superassistant.ollama
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.ui.text.AnnotatedString
 import com.example.superassistant.SuperAssistantRetrofit
 import com.example.superassistant.ollama.dto.OllamaEmbeddingsRequestDTO
 import com.example.superassistant.ollama.models.Chunk
@@ -25,7 +26,7 @@ class OllamaRepository(
     }
 
     fun getRag(
-        llmClient: suspend (String) -> Unit,
+        llmClient: suspend (AnnotatedString) -> Unit,
         reranker: suspend (String, List<Pair<Chunk, Double>>) -> List<Chunk>
     ): RagEngine {
         return RagEngine(
@@ -46,7 +47,7 @@ class OllamaRepository(
 
         files.forEach { text ->
 
-            val chunks = chunkText(text = text.second, chunkSize = 500, overlap = 150)
+            val chunks = chunkText(text = text.second, chunkSize = 250, overlap = 100)
 
             chunks.forEachIndexed { index, chunkText ->
 
@@ -96,6 +97,7 @@ class OllamaRepository(
         val ebm = Gson().fromJson(json, EmbeddingIndex::class.java).chunks
         return ebm.map {
             Chunk(
+                fileName = it.fileName,
                 id = it.chunkId,
                 text = it.text,
                 embedding = it.embedding
