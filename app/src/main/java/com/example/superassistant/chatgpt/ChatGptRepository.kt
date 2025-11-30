@@ -1,6 +1,9 @@
 package com.example.superassistant.chatgpt
 
-import android.util.Log
+import CompletionOptionsDBO
+import MessageDBO
+import RequestDBO
+import ResponseFormatDBO
 import com.example.superassistant.Keys
 import com.example.superassistant.SuperAssistantRetrofit
 import com.example.superassistant.chatgpt.dto.ChatGptMessageDto
@@ -8,15 +11,15 @@ import com.example.superassistant.chatgpt.dto.ChatGptRequestDto
 import com.example.superassistant.chatgpt.dto.ChatGptResponseDto
 import com.example.superassistant.chatgpt.dto.Tool
 import com.example.superassistant.chatgpt.dto.ToolFunction
-import com.example.superassistant.yandexgpt.data.network.dto.CompletionOptionsRequestDTO
-import com.example.superassistant.yandexgpt.data.network.dto.MessageRequestDTO
-import com.example.superassistant.yandexgpt.data.network.dto.PromptRequestDTO
-import com.example.superassistant.yandexgpt.data.network.dto.RootResponseDTO
-import com.example.superassistant.yandexgpt.data.network.dto.TypeRequestDTO
+import com.example.superassistant.yandexgpt.data.database.ChatDao
+import com.example.superassistant.yandexgpt.presentation.Dialog
 import com.example.superassistant.yandexgpt.presentation.models.Agent
 import kotlin.collections.plus
 
-class ChatGptRepository(private val retrofit: SuperAssistantRetrofit) {
+class ChatGptRepository(
+    private val retrofit: SuperAssistantRetrofit,
+    private val dao: ChatDao
+) {
 
     val api by lazy {
         retrofit.createApi(
@@ -25,6 +28,32 @@ class ChatGptRepository(private val retrofit: SuperAssistantRetrofit) {
             ChatGptApi::class.java
         )
     }
+
+    private var lastPrompt: ChatGptRequestDto? = null
+
+    suspend fun saveRequest(dialog: Dialog) {
+        lastPrompt?.let { prompt ->
+            dao.insertRequest(
+                RequestDBO(
+                    id = dialog.id.toLong(),
+                    completionOptions = CompletionOptionsDBO(
+                        maxTokens = "123",
+                        stream = false,
+                        temperature = prompt.temperature ?: 0.0,
+                        responseFormat = ResponseFormatDBO(
+                            type = "prompt.completionOptions.responseFormat.type"
+                        )
+                    ),
+                    modelUri = prompt.model,
+                    messages = prompt.messages.map {
+                        MessageDBO(role = it.role, text = it.content)
+                    }
+                )
+            )
+        }
+    }
+
+    suspend fun getChat(id: Long) = dao.getRequestById(id)
 
     suspend fun getModels(): List<String> {
         val response = api.getModels()
@@ -110,6 +139,12 @@ class ChatGptRepository(private val retrofit: SuperAssistantRetrofit) {
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body != null) {
+                    lastPrompt = prompt.copy(
+                        messages = prompt.messages + ChatGptMessageDto(
+                            role = prompt.messages.first().role,
+                            prompt.messages.first().content
+                        )
+                    )
                     Result.success(body)
                 } else {
                     Result.failure(Exception("Empty response body"))

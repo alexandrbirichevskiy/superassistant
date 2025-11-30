@@ -41,7 +41,14 @@ class ChatViewModel(
     private val agentList = listOf(agent)
 
     init {
-        sendUserMessage(isSystem = true, userText = AnnotatedString(""), true)
+        viewModelScope.launch {
+            val old = chatGptRepository.getChat(dialog.id.toLong())
+            if (old == null) {
+                sendUserMessage(isSystem = true, userText = AnnotatedString(""), true)
+            } else {
+                restore(old)
+            }
+        }
     }
 
     fun processFiles(files: List<Pair<String, String>>) {
@@ -58,33 +65,33 @@ class ChatViewModel(
         }
     }
 
-//    fun restore(data: RequestDBO) {
-//        data.messages.forEach {
-//            if (it.role != "system") {
-//                messages.add(
-//                    ChatMessageUi(
-//                        Ait.text,
-//                        isUser = it.role == "user"
-//                    )
-//                )
-//            }
-//        }
-//
-//        agentList.forEach { agent ->
-//            data.messages.forEach { mes ->
-//                agent.history.add(
-//                    MessageRequestDTO(
-//                        role = mes.role,
-//                        text = mes.text
-//                    )
-//                )
-//            }
-//        }
-//    }
+    fun restore(data: RequestDBO) {
+        data.messages.forEach {
+            if (it.role != "system") {
+                messages.add(
+                    ChatMessageUi(
+                        AnnotatedString(it.text),
+                        isUser = it.role == "user"
+                    )
+                )
+            }
+        }
+
+        agentList.forEach { agent ->
+            data.messages.forEach { mes ->
+                agent.history.add(
+                    MessageRequestDTO(
+                        role = mes.role,
+                        text = mes.text
+                    )
+                )
+            }
+        }
+    }
 
     fun saveChat() {
         viewModelScope.launch {
-            repository.saveRequest(dialog)
+            chatGptRepository.saveRequest(dialog)
         }
     }
 

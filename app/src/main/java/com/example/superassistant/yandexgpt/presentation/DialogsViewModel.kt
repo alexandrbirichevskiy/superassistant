@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 class DialogsViewModel(private val dao: DialogsDao) : ViewModel() {
 
     private val repository by lazy { DialogsRepository(SuperAssistantRetrofit(), dao) }
-    private val repositoryGpt by lazy { ChatGptRepository(SuperAssistantRetrofit()) }
+//    private val repositoryGpt by lazy { ChatGptRepository(SuperAssistantRetrofit(), dao) }
 
     val dialogs = repository.getDialogs().stateIn(
         viewModelScope,
@@ -25,13 +25,13 @@ class DialogsViewModel(private val dao: DialogsDao) : ViewModel() {
         emptyList()
     )
     val services = MutableStateFlow(listOf("YandexGPT", "OpenAI"))
-    val models = MutableStateFlow<List<String>>(emptyList())
+    val models = MutableStateFlow<List<String>>(listOf("gpt-4o-mini"))
 
-    init {
-        viewModelScope.launch {
-            models.update { repositoryGpt.getModels() }
-        }
-    }
+//    init {
+//        viewModelScope.launch {
+//            models.update { repositoryGpt.getModels() }
+//        }
+//    }
 
     fun addDialog(name: String, service: String, model: String) {
         viewModelScope.launch {

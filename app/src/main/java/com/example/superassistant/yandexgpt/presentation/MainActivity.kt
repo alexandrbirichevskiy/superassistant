@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
                         ChatViewModel(
                             dialog,
                             ChatRepository(retrofit, dbChat.requestDao()),
-                            ChatGptRepository(retrofit),
+                            ChatGptRepository(retrofit, dbChat.requestDao()),
                             OllamaRepository(retrofit = retrofit, application.applicationContext)
                         )
                     }
